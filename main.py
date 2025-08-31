@@ -140,11 +140,6 @@ app = Flask('')
 def home():
     return "✅ Bot is running!"
 
-# === Start Bot Loop as a Daemon Thread ===
-def start_bot_thread():
-    bot_thread = Thread(target=run_bot_loop, daemon=True)
-    bot_thread.start()
-
 # === Main Bot Loop ===
 def run_bot_loop():
     log("🤖 Bot is running. Waiting for triggers...")
@@ -157,7 +152,11 @@ def run_bot_loop():
             log(f"Error in bot loop: {e}")
             time.sleep(UPDATE_INTERVAL)
 
-# === Ensure bot thread starts when Flask starts ===
-@app.before_first_request
-def activate_bot_thread():
-    start_bot_thread()
+# === Start Bot Thread Immediately ===
+bot_thread = Thread(target=run_bot_loop, daemon=True)
+bot_thread.start()
+
+# === Run Flask App ===
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 8080))
+    app.run(host='0.0.0.0', port=port, debug=False, use_reloader=False)
