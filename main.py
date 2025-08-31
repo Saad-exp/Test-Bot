@@ -24,7 +24,7 @@ last_alert_time = {}  # Track last alert time per symbol
 def log(msg):
     print(f"[{datetime.utcnow()}] {msg}")
 
-# === Fetch tradable symbols from MEXC USDT-M futures ===
+# === Fetch tradable symbols ===
 def get_mexc_usdt_futures_symbols():
     log("Fetching MEXC USDT-M futures symbols...")
     try:
@@ -133,24 +133,13 @@ app = Flask('')
 def home():
     return "✅ Bot is running!"
 
-def run():
+def run_flask():
     port = int(os.environ.get("PORT", 8080))
-    app.run(host='0.0.0.0', port=port)
-
-def keep_alive():
-    t = Thread(target=run)
-    t.start()
+    app.run(host='0.0.0.0', port=port, debug=False, use_reloader=False)  # Important: no reloader
 
 # === Main Bot Loop ===
 def run_bot_loop():
     log("🤖 Bot is running. Waiting for triggers...")
-    
-    # Startup test alert
-    try:
-        bot.send_message(chat_id=CHAT_ID, text="✅ Bot loop started successfully!")
-        log("Startup test alert sent to Telegram.")
-    except Exception as e:
-        log(f"Failed to send startup alert: {e}")
 
     while True:
         try:
@@ -162,5 +151,8 @@ def run_bot_loop():
             time.sleep(UPDATE_INTERVAL)
 
 # === Start Everything ===
-keep_alive()
-Thread(target=run_bot_loop).start()
+if __name__ == "__main__":
+    # Run Flask in background thread
+    Thread(target=run_flask).start()
+    # Run bot loop in main thread
+    run_bot_loop()
