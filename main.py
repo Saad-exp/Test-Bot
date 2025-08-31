@@ -6,6 +6,7 @@ from telegram import Bot
 from flask import Flask
 from threading import Thread
 import os
+import logging
 
 # === CONFIGURATION ===
 BOT_TOKEN = "7631338194:AAHe8_XWlH3E5uFyusXFmyNsFuSB8brOUuE"
@@ -20,9 +21,15 @@ COOLDOWN_SECONDS = 600       # 10-minute cooldown
 bot = Bot(token=BOT_TOKEN)
 last_alert_time = {}  # Track last alert time per symbol
 
-# === Logging Helper ===
+# === Logging Setup ===
+logging.basicConfig(
+    level=logging.INFO,
+    format='[%(asctime)s] %(message)s',
+    datefmt='%Y-%m-%d %H:%M:%S'
+)
+
 def log(msg):
-    print(f"[{datetime.utcnow()}] {msg}")
+    logging.info(msg)
 
 # === Fetch tradable symbols ===
 def get_mexc_usdt_futures_symbols():
@@ -135,12 +142,11 @@ def home():
 
 def run_flask():
     port = int(os.environ.get("PORT", 8080))
-    app.run(host='0.0.0.0', port=port, debug=False, use_reloader=False)  # Important: no reloader
+    app.run(host='0.0.0.0', port=port, debug=False, use_reloader=False)
 
 # === Main Bot Loop ===
 def run_bot_loop():
     log("🤖 Bot is running. Waiting for triggers...")
-
     while True:
         try:
             fetch_price_changes()
@@ -152,7 +158,5 @@ def run_bot_loop():
 
 # === Start Everything ===
 if __name__ == "__main__":
-    # Run Flask in background thread
     Thread(target=run_flask).start()
-    # Run bot loop in main thread
     run_bot_loop()
