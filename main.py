@@ -158,5 +158,10 @@ def run_bot_loop():
 
 # === Start Everything ===
 if __name__ == "__main__":
-    Thread(target=run_flask).start()
-    run_bot_loop()
+    # Run bot loop in a daemon thread
+    bot_thread = Thread(target=run_bot_loop)
+    bot_thread.daemon = True
+    bot_thread.start()
+
+    # Run Flask in the main thread
+    run_flask()
